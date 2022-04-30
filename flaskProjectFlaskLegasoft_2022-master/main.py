@@ -15,11 +15,15 @@ from forms.newss import NewsForm
 from forms.user import RegisterForm, LoginForm
 from flask_restful import reqparse, abort, Api, Resource
 
+app = Flask(__name__, static_folder="static")
 app = Flask(__name__)
 api = Api(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 app.config['SECRET_KEY'] = getenv("SECRET_KEY")
+UPLOAD_PATH = 'static/images/'
+
+
 
 api.add_resource(news_resources.NewsListResource, '/api/v2/news')
 api.add_resource(news_resources.NewsResource, '/api/v2/news/<int:news_id>')
@@ -29,9 +33,8 @@ def index():
     db_sess = db_session.create_session()
     if current_user.is_authenticated:
         news = db_sess.query(News).filter(
-            (News.user == current_user) | (News.is_private != True))
-    else:
-        news = db_sess.query(News).filter(News.is_private != True)
+            (News.user == current_user))
+    news = db_sess.query(News)
     return render_template("index.html", news=news)
 
 
@@ -73,8 +76,7 @@ def edit_news(id):
             form.title.data = news.title
             form.content.data = news.content
             form.price.data = news.price
-            form.category.date = news.category
-            form.is_private.data = news.is_private
+            form.category.data = news.category
         else:
             abort(404)
     if form.validate_on_submit():
@@ -86,8 +88,7 @@ def edit_news(id):
             news.title = form.title.data
             news.content = form.content.data
             news.price = form.price.data
-            news.category = form.category.date
-            news.is_private = form.is_private.data
+            news.category = form.category.data
             db_sess.commit()
             return redirect('/')
         else:
@@ -149,7 +150,7 @@ def add_news():
         news.content = form.content.data
         news.price = form.price.data
         news.category = form.category.data
-        news.is_private = form.is_private.data
+        form.file.data.save(UPLOAD_PATH + f"{form.title.data.lower()}_{current_user.id}.png")
         current_user.news.append(news)
         db_sess.merge(current_user)
         db_sess.commit()

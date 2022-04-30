@@ -19,11 +19,9 @@ class News(SqlAlchemyBase, SerializerMixin):
                                      default=datetime.datetime.now)
     price = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     category = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    is_private = sqlalchemy.Column(sqlalchemy.Boolean, default=True)
-
     user_id = sqlalchemy.Column(sqlalchemy.Integer,
                                 sqlalchemy.ForeignKey("users.id"))
     user = orm.relation('User')
 
     def __repr__(self):
-        return f"NEWS - {self.title}, {self.content},{self.price},{self.category}, {self.is_private}"
+        return f"NEWS - {self.title}, {self.content},{self.price},{self.category}"
